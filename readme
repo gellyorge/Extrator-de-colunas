@@ -1,0 +1,6 @@
+#Instalacoes inicias necessarias
+pip install --upgrade pip
+pip install pyexcel
+pip install pyexcel-ods3
+pip install python-dotenv
+pip install pywin32
