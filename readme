@@ -1,6 +1,19 @@
-#Instalacoes inicias necessarias
+# Extrator de Colunas - README
+
+## Requisitos para Funcionar
+
+- Microsoft Excel instalado no computador (necessário para conversão de arquivos XLS para ODS usando automação via COM).
+
+---
+
+## Instalações iniciais necessárias
+
+Para preparar o ambiente Python, execute os seguintes comandos:
+
+```bash
 pip install --upgrade pip
 pip install pyexcel
 pip install pyexcel-ods3
 pip install python-dotenv
 pip install pywin32
+
