@@ -42,9 +42,9 @@ def converter_xls_para_ods(pasta_origem, pasta_destino):
     excel.Quit()
     print("Processo finalizado.")
 
-def filtrar_colunas_ods(pasta_ods, pasta_filtrados, indices_colunas):
+def filtrar_colunas_ods(pasta_ods, pasta_filtrados, indices_colunas, ordem_colunas=None):
     for root, _, arquivos in os.walk(pasta_ods):
-        subpasta_relativa = os.path.relpath(root, pasta_ods)  # pega caminho relativo dentro da pasta_ods
+        subpasta_relativa = os.path.relpath(root, pasta_ods)
         destino_atual = os.path.join(pasta_filtrados, subpasta_relativa)
         os.makedirs(destino_atual, exist_ok=True)
 
@@ -60,12 +60,25 @@ def filtrar_colunas_ods(pasta_ods, pasta_filtrados, indices_colunas):
                     planilha_filtrada = p.Sheet()
 
                     for linha in sheet:
-                        nova_linha = []
+                        # Primeiro pega as colunas de interesse na ordem normal
+                        colunas_extraidas = []
                         for i in indices_colunas:
                             if i < len(linha):
-                                nova_linha.append(linha[i])
+                                colunas_extraidas.append(linha[i])
                             else:
-                                nova_linha.append(None)
+                                colunas_extraidas.append(None)
+                        
+                        # Agora rearranja conforme ordem_colunas (que é uma lista de índices referente à colunas_extraidas)
+                        if ordem_colunas:
+                            nova_linha = []
+                            for idx in ordem_colunas:
+                                if idx < len(colunas_extraidas):
+                                    nova_linha.append(colunas_extraidas[idx])
+                                else:
+                                    nova_linha.append(None)
+                        else:
+                            nova_linha = colunas_extraidas
+
                         planilha_filtrada.row += [nova_linha]
 
                     planilha_filtrada.save_as(caminho_saida)
@@ -74,18 +87,20 @@ def filtrar_colunas_ods(pasta_ods, pasta_filtrados, indices_colunas):
                     print(f"Erro ao filtrar {arquivo}: {e}")
 
 
+
 if __name__ == "__main__":
     pasta_xls_rel = os.getenv("PASTA_XLS")
     pasta_ods_rel = os.getenv("PASTA_ODS")
-    pasta_filtrados_rel = os.getenv("PASTA_FILTRADOS")  # nova variável no .env
+    pasta_filtrados_rel = os.getenv("PASTA_FILTRADOS")
     indices_str = os.getenv("INDICES", "")
+    ordem_str = os.getenv("ORDEM", "")
 
     pasta_xls = caminho_absoluto_relativo(pasta_xls_rel)
     pasta_ods = caminho_absoluto_relativo(pasta_ods_rel)
     pasta_filtrados = caminho_absoluto_relativo(pasta_filtrados_rel)
 
     indices = [int(i) for i in indices_str.split(",") if i.strip().isdigit()]
+    ordem = [int(i) for i in ordem_str.split(",") if i.strip().isdigit()]
 
     converter_xls_para_ods(pasta_xls, pasta_ods)
-    filtrar_colunas_ods(pasta_ods, pasta_filtrados, indices)
-
+    filtrar_colunas_ods(pasta_ods, pasta_filtrados, indices, ordem_colunas=ordem)
