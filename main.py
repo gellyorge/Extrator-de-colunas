@@ -15,6 +15,7 @@ def caminho_absoluto_relativo(caminho_relativo):
     return os.path.abspath(os.path.join(raiz_app, caminho_relativo))
 
 def converter_xls_para_ods(pasta_origem, pasta_destino):
+    extensoes_validas = (".xls", ".xlsx")
     excel = win32com.client.Dispatch("Excel.Application")
     excel.Visible = False
 
@@ -25,22 +26,26 @@ def converter_xls_para_ods(pasta_origem, pasta_destino):
         os.makedirs(destino_atual, exist_ok=True)
 
         for arquivo in files:
-            if arquivo.lower().endswith(".xls") or arquivo.lower().endswith(".xlsx"):
-                caminho_entrada = os.path.join(root, arquivo)
-                nome_sem_ext = os.path.splitext(arquivo)[0]
-                caminho_saida = os.path.join(destino_atual, f"{nome_sem_ext}.ods")
+            if not arquivo.lower().endswith(extensoes_validas):
+                print(f"Ignorando (formato não suportado): {arquivo}")
+                continue  # pula esse arquivo
 
-                print(f"Convertendo: {caminho_entrada} → {caminho_saida}")
-                try:
-                    wb = excel.Workbooks.Open(caminho_entrada)
-                    wb.SaveAs(caminho_saida, FileFormat=60)  # 60 = formato ODS
-                    wb.Close()
-                    print("Conversão concluída")
-                except Exception as e:
-                    print(f"Erro ao converter {arquivo}: {e}")
+            caminho_entrada = os.path.join(root, arquivo)
+            nome_sem_ext = os.path.splitext(arquivo)[0]
+            caminho_saida = os.path.join(destino_atual, f"{nome_sem_ext}.ods")
+
+            print(f"Convertendo: {caminho_entrada} → {caminho_saida}")
+            try:
+                wb = excel.Workbooks.Open(caminho_entrada)
+                wb.SaveAs(caminho_saida, FileFormat=60)  # 60 = ODS
+                wb.Close()
+                print("Conversão concluída")
+            except Exception as e:
+                print(f"Erro ao converter {arquivo}: {e}")
 
     excel.Quit()
     print("Processo finalizado.")
+
 
 def filtrar_colunas_ods(pasta_ods, pasta_filtrados, indices_colunas, ordem_colunas=None):
     for root, _, arquivos in os.walk(pasta_ods):
